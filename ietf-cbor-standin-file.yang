@@ -1,0 +1,247 @@
+module ietf-cbor-standin-file {
+  yang-version 1.1;
+  namespace "urn:ietf:params:xml:ns:yang:ietf-cbor-standin-file";
+  prefix standin;
+
+  import ietf-sid-file {
+    prefix sid;
+    reference
+      "RFC 9595: YANG Schema Item iDentifier (YANG SID)";
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+    reference
+      "RFC 9911: Common YANG Data Types";
+  }
+
+  import ietf-yang-structure-ext {
+    prefix sx;
+    reference
+      "RFC 8791: YANG Data Structure Extensions";
+  }
+
+  organization
+    "IETF CORE Working Group";
+
+  contact
+    "WG Web:   <https://datatracker.ietf.org/wg/core/>
+
+     WG List:  <mailto:core@ietf.org>
+
+     Editor:   Carsten Bormann
+               <mailto:cabo@tzi.org>
+
+     Editor:   Maria Matejka
+               <mailto:maria.matejka@nic.cz>
+
+     Editor:   Vojtech Vilimek
+               <mailto:vojtech.vilimek@nic.cz>";
+
+  description
+    "This module defines the structure of the standin files.
+
+     // TODO: ...
+
+     Copyright (c) 2026 IETF Trust and the persons identified as
+     authors of the code.  All rights reserved.
+
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject to
+     the license terms contained in, the Revised BSD License set
+     forth in Section 4.c of the IETF Trust's Legal Provisions
+     Relating to IETF Documents
+     (https://trustee.ietf.org/license-info).
+
+     // TODO: RFC Editor change the RFC XXXX to correct number
+
+     This version of this YANG module is part of RFC XXXX
+     (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
+     for full legal notices.";
+
+
+  revision 2026-02-27 {
+    description
+      "Initial revision -- Work-in-progress";
+    reference
+      "RFC XXXX: Stand-in Tags for YANG-CBOR"; // RFC: Editor change the RFC number
+  }
+
+  typedef standin-encoding {
+    type identityref { base value-encoding; }
+    description "";
+  }
+
+  identity value-encoding {
+    description "Base identity for standin value encoding";
+  }
+
+  identity default {
+    base value-encoding;
+    description "Encoding without any standin tag.";
+    reference "{{-yang-cbor}}";
+  }
+
+  identity tag-date-time-basic {
+    base value-encoding;
+    description "Use representation with tags 1 and 100 to encode date and time";
+    reference "{{tag-date-time-basic}}";
+  }
+
+  identity tag-date-time-extended {
+    base value-encoding;
+    description "Use representation with tag 1001 to encode date and time";
+    reference "{{tag-date-time-extended}}";
+  }
+
+  identity tag-uuid {
+    base value-encoding;
+    description "Use representation with tag 37 to encode UUIDs";
+    reference "{{tag-uuid}}";
+  }
+
+  identity tag-hex-string {
+    base value-encoding;
+    description "Use representation with tag CPA113 to encode hex-string";
+    reference "";
+  }
+
+  identity tag-mac-address {
+    base value-encoding;
+    description "";
+    reference "";
+  }
+
+  identity tag-phys-address {
+    base value-encoding;
+    description "";
+    reference "";
+  }
+
+  identity tag-dotted-quad {
+    base value-encoding;
+    description "";
+    reference "";
+  }
+
+  identity tag-ipv6-address {
+    base value-encoding;
+    description "Use representation with tag 54 to encode IPv6 addresses";
+  }
+
+  identity tag-ipv6-address-no-zone {
+    base value-encoding;
+    description "Use representation with tag 54 to encode IPv6 addresses without zone information";
+  }
+
+  identity tag-ipv6-address-link-lock {
+    base value-encoding;
+    description "Use representation with tag 54 to encode IPv6 link-local addresses";
+  }
+
+  identity tag-ipv6-prefix {
+    base value-encoding;
+    description "Use representation with tag 54 to encode IPv6 prefixes";
+  }
+
+  identity tag-ipv6-address-and-prefix {
+    base value-encoding;
+    description "Use representation with tag 54 to encode IPv6 addresses together with prefixes";
+  }
+
+  identity tag-ipv4-address {
+    base value-encoding;
+    description "Use representation with tag 52 to encode IPv4 addresses";
+  } 
+
+  identity tag-ip-address {
+    base tag-ipv6-address;
+    base tag-ipv4-address;
+    description "Use representation with tag 52 or 53 to encode IP addresses";
+  }
+
+  // and many more: tag-ipv4-no-zone, tag-ip-no-zone, tag-ipv4-prefix, tag-ip-prefix,
+  // tag-ipv4-address-and-prefix, tag-ip-address-and-prefix, tag-ipv4-address-link-local
+  // tag-ip-address-link-local, ...
+
+  grouping standin-file-content {
+    description "Contents of the standin file.";
+
+    leaf module-name {
+      type yang:yang-identifier;
+      mandatory true;
+      description
+	"Name of the YANG module associated with this
+	standin file.";
+    }
+
+    leaf module-revision {
+      type sid:revision-identifier;
+      description
+	"Revision of the YANG module associated with this standin
+	file.
+	This leaf is not present if no revision statement is
+	defined in the YANG module.";
+    }
+
+    leaf sid-file-version {
+      type sid:sid-file-version-identifier;
+      default 0;
+      description
+	"Optional leaf that specifies the version number of the
+	adjacent '.sid' file which this file depends on.";
+    }
+
+    leaf description {
+      type string;
+      description
+	"Free-form meta-information about the standin file.";
+    }
+
+    list encoding {
+// TODO: Modeled this way, it is quite weird, maybe rework this
+// I think the best way to encode it is as list of (encoding, [sid | type])
+
+      key "standin";
+      config false; // This is ignored inside the sx:structure
+
+      leaf standin {
+	type standin-encoding;
+	description "Which value encoding to use";
+      }
+
+      container types {
+	leaf-list type {
+	  type string;
+	  description "Type name to be encoded by the specifed standin";
+	}
+
+	description "TODO";
+      }
+
+      container sids {
+	leaf-list sid {
+	  type sid:sid;
+	  description "SID to be encoded by the specified standin";
+//            TODO: Can this be a leafref? Yes, it can;
+	}
+
+	description "TODO";
+      }
+
+      // TODO: maybe add new option for explicit paths inside the schema tree (possibly in SID/NID encoding)
+
+      description
+	"TODO";
+    }
+  }
+
+  sx:structure standin-file {
+    description 
+      "Standin file describes which standins given server supports
+       and where they are used.";
+
+    uses standin-file-content;
+  }
+}
+
