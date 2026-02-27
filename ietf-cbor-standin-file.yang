@@ -229,6 +229,8 @@ module ietf-cbor-standin-file {
 	description "TODO";
       }
 
+      // TODO: maybe add new option for explicit paths inside the schema tree (possibly in SID/NID encoding)
+
       description
 	"TODO";
     }
